@@ -84,31 +84,34 @@ public class AgileMartDatasourceHelper {
   }
 
   public IDatabaseConnection getAgileMartDatasource() {
+    IDatabaseDialectService databaseDialectService = PentahoSystem.get( IDatabaseDialectService.class );
+    return getAgileMartDatasource( databaseDialectService );
+  }
+
+  public IDatabaseConnection getAgileMartDatasource( IDatabaseDialectService databaseDialectService ) {
     InputStream inputStream =
       resLoader.getResourceAsStream( AgileMartDatasourceLifecycleManager.class, AGILEMART_STAGING_PROPERTIES_FILE );
     Properties agileMartDatasourceProperties = new Properties();
     try {
       agileMartDatasourceProperties.load( inputStream );
-      return getAgileMartDatasource( false, agileMartDatasourceProperties );
+      return getAgileMartDatasource( false, agileMartDatasourceProperties, databaseDialectService );
     } catch ( IOException e ) {
-      return getAgileMartDatasource( true, agileMartDatasourceProperties );
+      return getAgileMartDatasource( true, agileMartDatasourceProperties, databaseDialectService );
     }
 
   }
 
-  private IDatabaseConnection getAgileMartDatasource( Boolean useDefault, Properties agileMartDatasourceProperties ) {
+  private IDatabaseConnection getAgileMartDatasource( Boolean useDefault, Properties agileMartDatasourceProperties,
+      IDatabaseDialectService databaseDialectService) {
     IDatabaseConnection databaseConnection = new DatabaseConnection();
 
-    IDatabaseDialectService databaseDialectService = PentahoSystem.get( IDatabaseDialectService.class );
     DatabaseTypeHelper databaseTypeHelper = new DatabaseTypeHelper( databaseDialectService.getDatabaseTypes() );
 
     databaseConnection.setDatabaseType( databaseTypeHelper.getDatabaseTypeByShortName( useDefault
-      ? agileMartDatasourceProperties.getProperty( DEFAULT_DATABASETYPESHORTNAME_VALUE )
-      : agileMartDatasourceProperties.getProperty( DATABASETYPESHORTNAME ) ) );
+      ? DEFAULT_DATABASETYPESHORTNAME_VALUE : agileMartDatasourceProperties.getProperty( DATABASETYPESHORTNAME ) ) );
 
     String accessType =
-      useDefault ? agileMartDatasourceProperties.getProperty( DEFAULT_ACCESS_TYPE_VALUE )
-        : agileMartDatasourceProperties.getProperty( ACCESS_TYPE );
+      useDefault ? DEFAULT_ACCESS_TYPE_VALUE : agileMartDatasourceProperties.getProperty( ACCESS_TYPE );
 
     // This is a special case with some PDI connections
     if ( accessType != null && accessType.contains( "Native" ) || accessType.equals( "NATIVE" ) ) {
@@ -120,44 +123,41 @@ public class AgileMartDatasourceHelper {
     databaseConnection.setAccessType( accessType != null
       ? DatabaseAccessType.getAccessTypeByName( accessType ) : null );
 
-    databaseConnection.setName( useDefault ? agileMartDatasourceProperties.getProperty( DEFAULT_NAME_VALUE )
-      : agileMartDatasourceProperties.getProperty( NAME ) );
-    databaseConnection.setChanged( Boolean.getBoolean( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_CHANGED_VALUE ) : agileMartDatasourceProperties.getProperty( CHANGED ) ) );
-    databaseConnection.setDatabaseName( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_DATABASENAME_VALUE ) : agileMartDatasourceProperties.getProperty( DATABASENAME ) );
-    databaseConnection.setDatabasePort( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_DATABASEPORT_VALUE ) : agileMartDatasourceProperties.getProperty( DATABASEPORT ) );
-    databaseConnection.setForcingIdentifiersToLowerCase( Boolean.getBoolean( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_FORCINGIDENTIFIERSTOLOWERCASE_VALUE ) : agileMartDatasourceProperties
+    databaseConnection.setName( useDefault ? DEFAULT_NAME_VALUE : agileMartDatasourceProperties.getProperty( NAME ) );
+    databaseConnection.setChanged( Boolean.getBoolean( useDefault ? DEFAULT_CHANGED_VALUE
+      : agileMartDatasourceProperties.getProperty( CHANGED ) ) );
+    databaseConnection.setDatabaseName( useDefault ? DEFAULT_DATABASENAME_VALUE
+      : agileMartDatasourceProperties.getProperty( DATABASENAME ) );
+    databaseConnection.setDatabasePort( useDefault ? DEFAULT_DATABASEPORT_VALUE
+      : agileMartDatasourceProperties.getProperty( DATABASEPORT ) );
+    databaseConnection.setForcingIdentifiersToLowerCase( Boolean.getBoolean( useDefault ?
+      DEFAULT_FORCINGIDENTIFIERSTOLOWERCASE_VALUE : agileMartDatasourceProperties
       .getProperty( FORCINGIDENTIFIERSTOLOWERCASE ) ) );
-    databaseConnection.setForcingIdentifiersToUpperCase( Boolean.getBoolean( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_FORCINGIDENTIFIERSTOUPPERCASE_VALUE ) : agileMartDatasourceProperties
+    databaseConnection.setForcingIdentifiersToUpperCase( Boolean.getBoolean( useDefault ? 
+      DEFAULT_FORCINGIDENTIFIERSTOUPPERCASE_VALUE : agileMartDatasourceProperties
       .getProperty( FORCINGIDENTIFIERSTOUPPERCASE ) ) );
-    databaseConnection.setHostname( useDefault ? agileMartDatasourceProperties.getProperty( DEFAULT_HOSTNAME_VALUE )
-      : agileMartDatasourceProperties.getProperty( HOSTNAME ) );
-    databaseConnection.setInitialPoolSize( Integer.valueOf( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_INITIALPOOLSIZE_VALUE )
+    databaseConnection.setHostname( useDefault ? DEFAULT_HOSTNAME_VALUE : agileMartDatasourceProperties
+      .getProperty( HOSTNAME ) );
+    databaseConnection.setInitialPoolSize( Integer.valueOf( useDefault ? DEFAULT_INITIALPOOLSIZE_VALUE
       : agileMartDatasourceProperties.getProperty( INITIALPOOLSIZE ) ) );
-    databaseConnection.setMaximumPoolSize( Integer.valueOf( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_MAXIMUMPOOLSIZE_VALUE )
+    databaseConnection.setMaximumPoolSize( Integer.valueOf( useDefault ? DEFAULT_MAXIMUMPOOLSIZE_VALUE
       : agileMartDatasourceProperties.getProperty( MAXIMUMPOOLSIZE ) ) );
-    databaseConnection.setPartitioned( Boolean.getBoolean( useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_PARTITIONED_VALUE ) : agileMartDatasourceProperties.getProperty( PARTITIONED ) ) );
-    databaseConnection.setPassword( useDefault ? agileMartDatasourceProperties.getProperty( DEFAULT_PASSWORD_VALUE )
-      : agileMartDatasourceProperties.getProperty( PASSWORD ) );
-    databaseConnection.setUsername( useDefault ? agileMartDatasourceProperties.getProperty( DEFAULT_USERNAME_VALUE )
-      : agileMartDatasourceProperties.getProperty( USERNAME ) );
+    databaseConnection.setPartitioned( Boolean.getBoolean( useDefault ? DEFAULT_PARTITIONED_VALUE
+      : agileMartDatasourceProperties.getProperty( PARTITIONED ) ) );
+    databaseConnection.setPassword( useDefault ? DEFAULT_PASSWORD_VALUE : agileMartDatasourceProperties
+      .getProperty( PASSWORD ) );
+    databaseConnection.setUsername( useDefault ? DEFAULT_USERNAME_VALUE : agileMartDatasourceProperties
+      .getProperty( USERNAME ) );
     databaseConnection.setUsingConnectionPool( Boolean
-      .getBoolean( useDefault ? agileMartDatasourceProperties.getProperty( DEFAULT_USECONNECTIONPOOL_VALUE )
-        : agileMartDatasourceProperties.getProperty( USECONNECTIONPOOL ) ) );
+      .getBoolean( useDefault ? DEFAULT_USECONNECTIONPOOL_VALUE : agileMartDatasourceProperties
+      .getProperty( USECONNECTIONPOOL ) ) );
     databaseConnection.setUsingDoubleDecimalAsSchemaTableSeparator( Boolean.getBoolean( useDefault
-      ? agileMartDatasourceProperties.getProperty( DEFAULT_USINGDOUBLEDECIMALASSCHEMATABLESEPERATOR_VALUE )
-      : agileMartDatasourceProperties.getProperty( USINGDOUBLEDECIMALASSCHEMATABLESEPERATOR ) ) );
+      ? DEFAULT_USINGDOUBLEDECIMALASSCHEMATABLESEPERATOR_VALUE : agileMartDatasourceProperties
+      .getProperty( USINGDOUBLEDECIMALASSCHEMATABLESEPERATOR ) ) );
 
     Map<String, String> attributes = new HashMap<String, String>();
-    attributes.put( ATTRIBUTE_PORT_NUMBER, useDefault ? agileMartDatasourceProperties
-      .getProperty( DEFAULT_DATABASEPORT_VALUE ) : agileMartDatasourceProperties.getProperty( DATABASEPORT ) );
+    attributes.put( ATTRIBUTE_PORT_NUMBER, useDefault ? DEFAULT_DATABASEPORT_VALUE : agileMartDatasourceProperties
+      .getProperty( DATABASEPORT ) );
 
     attributes.put( ATTRIBUTE_STANDARD_CONNECTION, Boolean.FALSE.toString() );
     attributes.put( ATTRIBUTE_AGILE_MART_CONNECTION, Boolean.TRUE.toString() );
