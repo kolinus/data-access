@@ -115,9 +115,12 @@ public class MultitableDatasourceService extends PentahoBase implements IGwtJoin
     throws DatasourceServiceException {
     try {
       DatabaseMeta databaseMeta = this.getDatabaseMeta( connection );
+      boolean originalLowerCaseFlag = databaseMeta.isForcingIdentifiersToLowerCase();
+      databaseMeta.setForcingIdentifiersToLowerCase( false );
       Database database = new Database( null, databaseMeta );
       database.connect();
       String[] tableNames = database.getTablenames( schema, true );
+      databaseMeta.setForcingIdentifiersToLowerCase( originalLowerCaseFlag );
       List<String> tables = new ArrayList<String>();
       tables.addAll( Arrays.asList( tableNames ) );
       tables.addAll( Arrays.asList( database.getViews( schema, true ) ) );
